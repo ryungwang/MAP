@@ -1,7 +1,5 @@
 package com.map.app.config.securityConfig;
 
-import com.map.app.entity.user.UserEntity;
-import com.map.app.main.user.dto.UserDto;
 import com.map.app.main.user.repository.UserRepository;
 import com.map.app.main.user.service.UserService;
 import lombok.AllArgsConstructor;
@@ -14,7 +12,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -22,8 +19,6 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private UserService userService;
-
-    private UserRepository userRepository;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -33,7 +28,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) {
         // static 디렉터리의 하위 파일 목록은 인증 무시 ( = 항상통과 )
-        web.ignoring().antMatchers("/css/**", "/js/**", "/img/**", "/lib/**");
+        web.ignoring().antMatchers("/static/css/**", "/static/js/**", "/static/svg/**", "/img/**", "/lib/**");
     }
 
     @Override
@@ -42,7 +37,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //                .antMatchers("/").permitAll()
                 /** 페이지 권한 설정 */
                 /** /admin 으로 시작하는 경로는 ADMIN 롤을 가진 사용자만 접근 */
-                .antMatchers("/admin/**").hasRole("ADMIN")
+                .antMatchers("/**").hasRole("ADMIN")
                 /** /user 경로는 MEMBER 롤을 가진 사용자만 접근 */
                 .antMatchers("/user/**").hasRole("MEMBER")
                 /** 모든 경로에 대해서는 권한없이 접근 가능 */
@@ -58,11 +53,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //                .usernameParameter("파라미터명")
                 /** 커스텀 로그인 폼을 사용 */
 //                .loginPage("/login/login")
-
                 /** 로그인이 성공했을 때 이동되는 페이지 */
-                .defaultSuccessUrl("/loginSuccess")
-                .permitAll()
-
+//                .defaultSuccessUrl("/loginSuccess").permitAll()
 
                 .and()
 
@@ -71,12 +63,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 /** 로그아웃의 기본 URL(/logout) 이 아닌 다른 URL로 재정의 */
 //                .logoutRequestMatcher(new AntPathRequestMatcher("/user/logOut"))
                 /** 로그아웃의 성공 URL */
-                .logoutSuccessUrl("/login/logOutSuccess")
-                .invalidateHttpSession(true)
+//                .logoutSuccessUrl("/logOutSuccess")
+                .invalidateHttpSession(true).permitAll()
                 /** 로그아웃 시, 특정 쿠기를 제거 */
 //                .deleteCookies("키명")
 
                 .and()
+
                 /** 403 예외처리 핸들링 */
                 .exceptionHandling().accessDeniedPage("/common/accessDenied");
     }

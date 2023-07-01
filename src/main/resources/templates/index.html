@@ -5,12 +5,15 @@
 	<title>메인</title>
 </head>
 <body>
-<h1>메인 페이지</h1>
-<hr>
-<a sec:authorize="isAnonymous()" th:href="@{/login}">로그인</a>
-<a sec:authorize="isAuthenticated()" th:href="@{/logout}">로그아웃</a>
-<a sec:authorize="isAnonymous()" th:href="@{/signup}">회원가입</a>
-<a sec:authorize="hasRole('ROLE_MEMBER')" th:href="@{/user/main}">내정보</a>
-<a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{/admin}">어드민</a>
+	<h1 id="title">메인 페이지</h1>
+	<hr>
+	<a sec:authorize="isAuthenticated()" th:href="@{/logout}">로그아웃</a>
+	<a sec:authorize="isAnonymous()" th:href="@{/signUp}">회원가입</a>
+	<a sec:authorize="hasRole('ROLE_MEMBER')" th:href="@{/user/main}">내정보</a>
+	<a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{/admin}">어드민</a>
+<div>
+	<div th:insert="/map/map.html" ></div>
+</div>
 </body>
+
 </html>

@@ -2,7 +2,6 @@ package com.map.app.main.login.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 public class LoginController {
@@ -12,7 +11,7 @@ public class LoginController {
      */
     @GetMapping("/loginSuccess")
     public String loginSuccess() {
-        return "/login/loginSuccess";
+        return "/common/loginSuccess";
     }
 
     /**
@@ -20,7 +19,7 @@ public class LoginController {
      */
     @GetMapping("/logOutSuccess")
     public String logOutSuccess() {
-        return "/login/logOutSuccess";
+        return "/common/logOutSuccess";
     }
 
     /**
@@ -29,7 +28,7 @@ public class LoginController {
      */
     @GetMapping("/signUp")
     public String signup() {
-        return "/login/signUp";
+        return "/common/signUp";
     }
 
     /**
