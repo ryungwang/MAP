@@ -11,9 +11,8 @@
 	<a sec:authorize="isAnonymous()" th:href="@{/signUp}">회원가입</a>
 	<a sec:authorize="hasRole('ROLE_MEMBER')" th:href="@{/user/main}">내정보</a>
 	<a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{/admin}">어드민</a>
-<div>
 	<div th:insert="/map/map.html" ></div>
-</div>
+	<!--<img src="/svg/BlankMap-World-180E.svg">-->
 </body>
 
 </html>
