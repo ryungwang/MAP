@@ -6,7 +6,7 @@ var scaleFactor = 1
 // autorotation speed
 var degPerSec = 6
 // start angles
-var angles = { x: -20, y: 40, z: 0}
+var angles = { x: -30, y: -130, z: 0}
 
 /** 바다 색 */
     // var colorWater = '#fff'
@@ -69,8 +69,8 @@ function setAngles() {
 }
 
 function scale() {
-    width = 980
-    height = document.documentElement.clientHeight
+    width = 800
+    height = 800
     canvas.attr('width', width).attr('height', height)
     projection
         .scale((scaleFactor * Math.min(width, height)) / 2)
@@ -151,7 +151,8 @@ function rotate(elapsed) {
 function loadData(cb) {
     d3.json('https://unpkg.com/world-atlas@1/world/110m.json', function(error, world) {
         if (error) throw error
-        d3.tsv('https://gist.githubusercontent.com/mbostock/4090846/raw/07e73f3c2d21558489604a0bc434b3a5cf41a867/world-country-names.tsv', function(error, countries) {
+        d3.tsv('/other/tsv/world-country-names.tsv', function(error, countries) {
+        // d3.tsv('https://gist.githubusercontent.com/mbostock/4090846/raw/07e73f3c2d21558489604a0bc434b3a5cf41a867/world-country-names.tsv', function(error, countries) {
             if (error) throw error
             cb(world, countries)
         })
