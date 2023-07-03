@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<title>메인</title>
 	<script src="/js/home/enToKor.js"></script>
-	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<script src="/js/d3.v4.min.js"></script>
 	<script src="/js/topojson-client.js"></script>
 	<script src="/js/versor.js"></script>
 	<style>
@@ -12,15 +12,18 @@
 			margin: 0;
 			padding: 0;
 		}
-
-		#globe {
-			cursor: move;
+		.country:hover {
+			fill: red;
 		}
 
-		#current {
-			position: absolute;
-			font-family: sans-serif;
-			margin-left: 4%;
+		.country {
+			fill: lightgreen;
+			stroke: black;
+			stroke-width: 0.05px;
+		}
+
+		.sphere {
+			fill: darkblue;
 		}
 	</style>
 </head>
@@ -31,11 +34,76 @@
 	<a sec:authorize="isAnonymous()" th:href="@{/signUp}">회원가입</a>
 	<a sec:authorize="hasRole('ROLE_MEMBER')" th:href="@{/user/main}">내정보</a>
 	<a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{/admin}">어드민</a>
-
+	<input type="hidden" id="cnt" name="cnt" onchange="setGpath()">
 	<h2 id="current"></h2>
 	<div>
-		<canvas id="globe"></canvas>
+
 	</div>
 </body>
-<script src="/js/home/index.js"></script>
+<script>
+	var cnt = 0;
+	var countries
+	var countryList
+	const svg = d3.select('div').append('svg').attr('width', 1440).attr('height', 900);
+	const g = svg.append('g');
+	const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+	const projection = d3.geoNaturalEarth1();
+	const pathGenerator = d3.geoPath().projection(projection);
+	var countries;
+
+	svg.call(
+		d3.zoom().on('zoom', function() {
+			g.attr('transform', d3.zoomTransform(this));
+		})
+	);
+
+	d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json', function(data){
+		console.log(data)
+		// Convert topoJSON to geoJSON
+		if(cnt == 0){
+			countries = topojson.feature(data, data.objects.countries)
+
+			cnt++;
+			setGpath();
+		}
+			// svg
+			// 	.selectAll('path')
+			// 	.data(countries.features)
+			// 	.enter()
+			// 	.append('path')
+			// 	.attr('class', 'country')
+			// 	.attr('d', pathGenerator)
+			// 	.append('title') // (*)
+			// 	.text(d => d.properties.name);
+
+			// Join data and draw svg path
+
+	});
+
+
+	function setGpath(){
+		g.append('path')
+				.attr('class', 'sphere')
+				.attr('d', pathGenerator({ type: 'Sphere' }))
+
+		g.selectAll('path')
+			.data(countries.features)
+			.enter()
+			.append('path')
+			.attr('class', 'country')
+			.attr('d', pathGenerator)
+			.append('title') // Add a tooltop
+			.text(function(d){ return d.properties.name});
+
+		setGpathFill();
+	}
+
+	function setGpathFill(){
+		for(var i = 0; i < g.selectAll('path')._groups[0].length; i++){
+			if(g.selectAll('path')._groups[0][i].classList.value != "sphere"){
+				g.selectAll('path')._groups[0][i].style.fill = colorScale(g.selectAll('path')._groups[0][i].__data__.properties.name);
+			}
+		}
+	}
+</script>
 </html>
