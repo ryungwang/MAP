@@ -13,7 +13,7 @@
 			padding: 0;
 		}
 		.country:hover {
-			fill: red;
+			fill: white;
 		}
 
 		.country {
@@ -34,7 +34,6 @@
 	<a sec:authorize="isAnonymous()" th:href="@{/signUp}">회원가입</a>
 	<a sec:authorize="hasRole('ROLE_MEMBER')" th:href="@{/user/main}">내정보</a>
 	<a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{/admin}">어드민</a>
-	<input type="hidden" id="cnt" name="cnt" onchange="setGpath()">
 	<h2 id="current"></h2>
 	<div>
 
@@ -47,7 +46,7 @@
 	const svg = d3.select('div').append('svg').attr('width', 1440).attr('height', 900);
 	const g = svg.append('g');
 	const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
-	const projection = d3.geoNaturalEarth1();
+	const projection = d3.geoOrthographic()
 	const pathGenerator = d3.geoPath().projection(projection);
 	var countries;
 
@@ -57,34 +56,21 @@
 		})
 	);
 
-	d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json', function(data){
+	// d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json', function(data){
+		d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json', function(data){
 		console.log(data)
 		// Convert topoJSON to geoJSON
 		if(cnt == 0){
 			countries = topojson.feature(data, data.objects.countries)
-
-			cnt++;
 			setGpath();
 		}
-			// svg
-			// 	.selectAll('path')
-			// 	.data(countries.features)
-			// 	.enter()
-			// 	.append('path')
-			// 	.attr('class', 'country')
-			// 	.attr('d', pathGenerator)
-			// 	.append('title') // (*)
-			// 	.text(d => d.properties.name);
-
-			// Join data and draw svg path
-
 	});
 
 
 	function setGpath(){
 		g.append('path')
-				.attr('class', 'sphere')
-				.attr('d', pathGenerator({ type: 'Sphere' }))
+			.attr('class', 'sphere')
+			.attr('d', pathGenerator({ type: 'Sphere' }))
 
 		g.selectAll('path')
 			.data(countries.features)
@@ -102,6 +88,10 @@
 		for(var i = 0; i < g.selectAll('path')._groups[0].length; i++){
 			if(g.selectAll('path')._groups[0][i].classList.value != "sphere"){
 				g.selectAll('path')._groups[0][i].style.fill = colorScale(g.selectAll('path')._groups[0][i].__data__.properties.name);
+
+				g.selectAll('path')._groups[0][i].addEventListener('mouseover', function(){this.style.fill = '#ffffff'})
+				g.selectAll('path')._groups[0][i].addEventListener('mouseout', function(){this.style.fill = colorScale(this.children[0].textContent)})
+
 			}
 		}
 	}
