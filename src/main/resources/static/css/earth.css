@@ -1,0 +1,70 @@
+@font-face {
+    font-family: "BlackHanSans-Regular";
+    src: url("/font/BlackHanSans-Regular.ttf") format("truetype");
+    font-weight: normal;
+}
+@font-face {
+    font-family: "NanumMyeongjo-Bold";
+    src: url("/font/NanumMyeongjo-Bold.ttf") format("truetype");
+}
+@font-face {
+    font-family: "NanumMyeongjo-Regular";
+    src: url("/font/NanumMyeongjo-Regular.ttf") format("truetype");
+}
+@font-face {
+    font-family: "NanumMyeongjo-ExtraBold";
+    src: url("/font/NanumMyeongjo-ExtraBold.ttf") format("truetype");
+}
+@font-face {
+    font-family: "Gugi-Regular";
+    src: url("/font/Gugi-Regular.ttf") format("truetype");
+}
+
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+.country:hover, .dosi_over {
+    fill: #000000;
+    opacity : 1 !important;
+}
+
+.country {
+    stroke: black;
+    stroke-width: 0.05px;
+}
+
+.sphere {
+    fill: darkblue;
+}
+
+.text_top{
+    vertical-align: top;
+}
+
+#earth_tb_dv{
+    width: 850px;
+}
+
+#current{
+    margin:0;
+}
+
+#earth_tb{
+    width: 100%;
+}
+
+.labelText{
+    font-family: 'Gugi-Regular', serif;
+}
+
+.labelTextFont{
+    font-family: 'Gugi-Regular', serif;
+    font-size: 30px;
+}
+
+.labelTextFont20{
+    font-family: 'Gugi-Regular', serif;
+    font-size: 20px;
+}

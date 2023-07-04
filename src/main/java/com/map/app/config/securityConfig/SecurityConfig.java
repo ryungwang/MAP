@@ -54,7 +54,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 /** 커스텀 로그인 폼을 사용 */
 //                .loginPage("/login/login")
                 /** 로그인이 성공했을 때 이동되는 페이지 */
-//                .defaultSuccessUrl("/loginSuccess").permitAll()
+                .defaultSuccessUrl("/main").permitAll()
 
                 .and()
 

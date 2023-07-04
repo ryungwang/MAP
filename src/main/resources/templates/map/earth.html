@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="UTF-8">
+	<title>Map Hi</title>
+	<script src="/js/d3.v4.min.js"></script>
+	<script src="/js/topojson-client.js"></script>
+	<script src="/js/versor.js"></script>
+	<link th:href="@{/css/earth.css}" rel="stylesheet">
+</head>
+<body>
+	<a sec:authorize="isAnonymous()" th:href="@{/map/korea}">한국</a>
+	<div id="earth_dv">
+		<table id="earth_tb">
+			<colgroup>
+				<col width="44%">
+			</colgroup>
+			<tr>
+				<td class="text_top">
+					<div id="earth_tb_dv">
+
+					</div>
+				</td>
+				<td class="text_top">
+					<div style="border: 1px" id="pic">
+						<h2 id="current"></h2>
+					</div>
+				</td>
+			</tr>
+		</table>
+	</div>
+</body>
+<script src="/js/home/earth.js"></script>
+</html>
