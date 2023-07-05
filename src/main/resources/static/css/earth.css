@@ -27,7 +27,7 @@ html, body {
     min-height: 100vh;
 }
 
-#canvas{
+canvas{
     position: absolute;
     z-index: -9999;
 }
@@ -48,14 +48,6 @@ html, body {
 
 .text_top{
     vertical-align: top;
-}
-
-#earth_tb_dv{
-    width: 100%;
-    height: 100%;
-    text-align: center;
-    position: absolute;
-    z-index: 9999;
 }
 
 #current{
