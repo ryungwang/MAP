@@ -21,13 +21,13 @@ function loadData(cb){
 /** svg 태그로 그리기 */
 function setGpath(){
     let width = d3.select("#earth_tb_dv").node().getBoundingClientRect().width
-    let height = 832
+    let height = 1300
     const sensitivity = 75
 
     let projection = d3.geoOrthographic()
-        .scale(410)
+        .scale(100)
         .center([0, 0])
-        .rotate([-128,-35])
+        .rotate([-128,-38])
         .translate([width / 2, height / 2])
 
     const initialScale = projection.scale()
@@ -36,10 +36,11 @@ function setGpath(){
     let svg = d3.select("#earth_tb_dv")
         .append("svg")
         .attr("width", width)
-        .attr("height", height)
+        .style("height", "99.6vh")
+
 
     let globe = svg.append("circle")
-        .attr("fill", "#00008BFF")
+        .attr("fill", "#3579bd")
         .attr("stroke", "#000")
         .attr("stroke-width", "0.2")
         .attr("cx", width/2)
@@ -56,7 +57,7 @@ function setGpath(){
         path = d3.geoPath().projection(projection)
         svg.selectAll("path").attr("d", path)
     })).call(d3.zoom()
-        .scaleExtent([1, 5])
+        .scaleExtent([0, 100])
         .on('zoom', () => {
         if(d3.event.transform.k > 0.3) {
             projection.scale(initialScale * d3.event.transform.k)
@@ -94,8 +95,10 @@ function setGpath(){
         .append('title')
         .text(d => d.properties.name)
 
-    document.getElementById("pic").style.width = "100%";
-    document.getElementById("pic").style.height = height + "px";
+
+    // document.getElementById("pic").style.width = "100%";
+    // document.getElementById("pic").style.height = height + "px";
+
     /** 자동 회전 */
     // d3.timer(function(elapsed) {
     // 	const rotate = projection.rotate()

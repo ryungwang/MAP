@@ -34,7 +34,7 @@ function setKoreaMap(){
         .attr('class', 'background')
         .attr('width', width)
         .attr('height', height)
-        .attr("fill", "#00008BFF")
+        .attr("fill", "#3579bd")
 
     // 지도가 그려지는 그래픽 노드(g) 생성
     const g = svg.append('g');
