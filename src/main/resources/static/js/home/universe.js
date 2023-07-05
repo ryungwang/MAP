@@ -261,7 +261,7 @@ orbitControls.enabled = !cameraAutoRotation;
 
 scene.add(camera);
 scene.add(spotLight);
-scene.add(earth);
+// scene.add(earth);
 
 // Light Configurations
 spotLight.position.set(2, 0, 1);
