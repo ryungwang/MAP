@@ -21,7 +21,7 @@ function loadData(cb){
 /** svg 태그로 그리기 */
 function setGpath(){
     let width = d3.select("#earth_tb_dv").node().getBoundingClientRect().width
-    let height = 1300
+    let height = 900
     const sensitivity = 75
 
     let projection = d3.geoOrthographic()
@@ -64,7 +64,6 @@ function setGpath(){
             path = d3.geoPath().projection(projection)
             svg.selectAll("path").attr("d", path)
             globe.attr("r", projection.scale())
-            console.log(projection.scale())
         }
         else {
             d3.event.transform.k = 0.3
@@ -100,16 +99,16 @@ function setGpath(){
     // document.getElementById("pic").style.height = height + "px";
 
     /** 자동 회전 */
-    // d3.timer(function(elapsed) {
-    // 	const rotate = projection.rotate()
-    // 	const k = sensitivity / projection.scale()
-    // 	projection.rotate([
-    // 		rotate[0] - 1 * k,
-    // 		rotate[1]
-    // 	])
-    // 	path = d3.geoPath().projection(projection)
-    // 	svg.selectAll("path").attr("d", path)
-    // },200)
+    d3.timer(function(elapsed) {
+    	const rotate = projection.rotate()
+    	const k = sensitivity / projection.scale()
+    	projection.rotate([
+    		rotate[0] - 1 * k,
+    		rotate[1]
+    	])
+    	path = d3.geoPath().projection(projection)
+    	svg.selectAll("path").attr("d", path)
+    },200)
 }
 
 /** 국가 조회 */

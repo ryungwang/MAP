@@ -1,100 +1,371 @@
-var canvas = document.getElementById('canvas'),
-    ctx = canvas.getContext('2d'),
-    w = canvas.width = window.innerWidth,
-    h = canvas.height = window.innerHeight,
+// Scene, Camera, Renderer
+let renderer = new THREE.WebGLRenderer();
+let scene = new THREE.Scene();
+let aspect = window.innerWidth / window.innerHeight;
+let camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1500);
+let cameraRotation = 0;
+let cameraRotationSpeed = 0.001;
+let cameraAutoRotation = true;
+let orbitControls = new THREE.OrbitControls(camera);
 
-    hue = 217,
-    stars = [],
-    count = 0,
-    maxStars = 1400;
+// Lights
+let spotLight = new THREE.SpotLight(0xffffff, 1, 0, 10, 2);
 
-// Thanks @jackrugile for the performance tip! https://codepen.io/jackrugile/pen/BjBGoM
-// Cache gradient
-var canvas2 = document.createElement('canvas'),
-    ctx2 = canvas2.getContext('2d');
-canvas2.width = 100;
-canvas2.height = 100;
-var half = canvas2.width/2,
-    gradient2 = ctx2.createRadialGradient(half, half, 0, half, half, half);
-gradient2.addColorStop(0.025, '#fff');
-gradient2.addColorStop(0.1, 'hsl(' + hue + ', 61%, 33%)');
-gradient2.addColorStop(0.25, 'hsl(' + hue + ', 64%, 6%)');
-gradient2.addColorStop(1, 'transparent');
+// Texture Loader
+let textureLoader = new THREE.TextureLoader();
 
-ctx2.fillStyle = gradient2;
-ctx2.beginPath();
-ctx2.arc(half, half, half, 0, Math.PI * 2);
-ctx2.fill();
+// Planet Proto
+let planetProto = {
+    sphere: function(size) {
+        let sphere = new THREE.SphereGeometry(size, 32, 32);
 
-// End cache
+        return sphere;
+    },
+    material: function(options) {
+        let material = new THREE.MeshPhongMaterial();
+        if (options) {
+            for (var property in options) {
+                material[property] = options[property];
+            }
+        }
 
-function random(min, max) {
-    if (arguments.length < 2) {
-        max = min;
-        min = 0;
+        return material;
+    },
+    glowMaterial: function(intensity, fade, color) {
+        // Custom glow shader from https://github.com/stemkoski/stemkoski.github.com/tree/master/Three.js
+        let glowMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                'c': {
+                    type: 'f',
+                    value: intensity
+                },
+                'p': {
+                    type: 'f',
+                    value: fade
+                },
+                glowColor: {
+                    type: 'c',
+                    value: new THREE.Color(color)
+                },
+                viewVector: {
+                    type: 'v3',
+                    value: camera.position
+                }
+            },
+            vertexShader: `
+        uniform vec3 viewVector;
+        uniform float c;
+        uniform float p;
+        varying float intensity;
+        void main() {
+          vec3 vNormal = normalize( normalMatrix * normal );
+          vec3 vNormel = normalize( normalMatrix * viewVector );
+          intensity = pow( c - dot(vNormal, vNormel), p );
+          gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+        }`
+            ,
+            fragmentShader: `
+        uniform vec3 glowColor;
+        varying float intensity;
+        void main() 
+        {
+          vec3 glow = glowColor * intensity;
+          gl_FragColor = vec4( glow, 1.0 );
+        }`
+            ,
+            side: THREE.BackSide,
+            blending: THREE.AdditiveBlending,
+            transparent: true
+        });
+
+        return glowMaterial;
+    },
+    texture: function(material, property, uri) {
+        let textureLoader = new THREE.TextureLoader();
+        textureLoader.crossOrigin = true;
+        textureLoader.load(
+            uri,
+            function(texture) {
+                material[property] = texture;
+                material.needsUpdate = true;
+            }
+        );
+    }
+};
+
+let createPlanet = function(options) {
+    // Create the planet's Surface
+    let surfaceGeometry = planetProto.sphere(options.surface.size);
+    let surfaceMaterial = planetProto.material(options.surface.material);
+    let surface = new THREE.Mesh(surfaceGeometry, surfaceMaterial);
+
+    // Create the planet's Atmosphere
+    let atmosphereGeometry = planetProto.sphere(options.surface.size + options.atmosphere.size);
+    let atmosphereMaterialDefaults = {
+        side: THREE.DoubleSide,
+        transparent: true
+    }
+    let atmosphereMaterialOptions = Object.assign(atmosphereMaterialDefaults, options.atmosphere.material);
+    let atmosphereMaterial = planetProto.material(atmosphereMaterialOptions);
+    let atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+
+    // Create the planet's Atmospheric glow
+    let atmosphericGlowGeometry = planetProto.sphere(options.surface.size + options.atmosphere.size + options.atmosphere.glow.size);
+    let atmosphericGlowMaterial = planetProto.glowMaterial(options.atmosphere.glow.intensity, options.atmosphere.glow.fade, options.atmosphere.glow.color);
+    let atmosphericGlow = new THREE.Mesh(atmosphericGlowGeometry, atmosphericGlowMaterial);
+
+    // Nest the planet's Surface and Atmosphere into a planet object
+    let planet = new THREE.Object3D();
+    surface.name = 'surface';
+    atmosphere.name = 'atmosphere';
+    atmosphericGlow.name = 'atmosphericGlow';
+    planet.add(surface);
+    planet.add(atmosphere);
+    planet.add(atmosphericGlow);
+
+    // Load the Surface's textures
+    for (let textureProperty in options.surface.textures) {
+        planetProto.texture(
+            surfaceMaterial,
+            textureProperty,
+            options.surface.textures[textureProperty]
+        );
     }
 
-    if (min > max) {
-        var hold = max;
-        max = min;
-        min = hold;
+    // Load the Atmosphere's texture
+    for (let textureProperty in options.atmosphere.textures) {
+        planetProto.texture(
+            atmosphereMaterial,
+            textureProperty,
+            options.atmosphere.textures[textureProperty]
+        );
     }
 
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+    return planet;
+};
 
-function maxOrbit(x,y) {
-    var max = Math.max(x,y),
-        diameter = Math.round(Math.sqrt(max*max + max*max));
-    return diameter/2;
-}
+let earth = createPlanet({
+    surface: {
+        size: 0.5,
+        material: {
+            bumpScale: 0.05,
+            specular: new THREE.Color('grey'),
+            shininess: 10
+        },
+        textures: {
+            map: 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/141228/earthmap1k.jpg',
+            bumpMap: 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/141228/earthbump1k.jpg',
+            specularMap: 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/141228/earthspec1k.jpg'
+        }
+    },
+    atmosphere: {
+        size: 0.003,
+        material: {
+            opacity: 0.8
+        },
+        textures: {
+            map: 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/141228/earthcloudmap.jpg',
+            alphaMap: 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/141228/earthcloudmaptrans.jpg'
+        },
+        glow: {
+            size: 0.02,
+            intensity: 0.7,
+            fade: 7,
+            color: 0x93cfef
+        }
+    },
+});
 
-var Star = function() {
+// Marker Proto
+let markerProto = {
+    latLongToVector3: function latLongToVector3(latitude, longitude, radius, height) {
+        var phi = (latitude)*Math.PI/180;
+        var theta = (longitude-180)*Math.PI/180;
 
-    this.orbitRadius = random(maxOrbit(w,h));
-    this.radius = random(60, this.orbitRadius) / 30;
-    this.orbitX = w / 2;
-    this.orbitY = h / 2;
-    this.timePassed = random(0, maxStars);
-    this.speed = random(this.orbitRadius) / 10000000;
-    this.alpha = random(2, 10) / 10;
+        var x = -(radius+height) * Math.cos(phi) * Math.cos(theta);
+        var y = (radius+height) * Math.sin(phi);
+        var z = (radius+height) * Math.cos(phi) * Math.sin(theta);
 
-    count++;
-    stars[count] = this;
-}
+        return new THREE.Vector3(x,y,z);
+    },
+    marker: function marker(size, color, vector3Position) {
+        let markerGeometry = new THREE.SphereGeometry(size);
+        let markerMaterial = new THREE.MeshLambertMaterial({
+            color: color
+        });
+        let markerMesh = new THREE.Mesh(markerGeometry, markerMaterial);
+        markerMesh.position.copy(vector3Position);
 
-Star.prototype.draw = function() {
-    var x = Math.sin(this.timePassed) * this.orbitRadius + this.orbitX,
-        y = Math.cos(this.timePassed) * this.orbitRadius + this.orbitY,
-        twinkle = random(10);
-
-    if (twinkle === 1 && this.alpha > 0) {
-        this.alpha -= 0.05;
-    } else if (twinkle === 2 && this.alpha < 1) {
-        this.alpha += 0.05;
+        return markerMesh;
     }
-
-    // ctx.globalAlpha = this.alpha;
-    ctx.drawImage(canvas2, x - this.radius / 2, y - this.radius / 2, this.radius, this.radius);
-    this.timePassed += this.speed;
 }
 
-for (var i = 0; i < maxStars; i++) {
-    new Star();
+// Place Marker
+let placeMarker = function(object, options) {
+    let position = markerProto.latLongToVector3(options.latitude, options.longitude, options.radius, options.height);
+    let marker = markerProto.marker(options.size, options.color, position);
+    object.add(marker);
 }
 
-function animation() {
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.globalAlpha = 0.8;
-    // ctx.fillStyle = 'hsla(' + hue + ', 64%, 6%, 1)';
-    ctx.fillRect(0, 0, w, h)
+// Place Marker At Address
+let placeMarkerAtAddress = function(address, color) {
+    let encodedLocation = address.replace(/\s/g, '+');
+    let httpRequest = new XMLHttpRequest();
 
-    ctx.globalCompositeOperation = 'lighter';
-    for (var i = 1, l = stars.length; i < l; i++) {
-        stars[i].draw();
+    httpRequest.open('GET', 'https://maps.googleapis.com/maps/api/geocode/json?address=' + encodedLocation);
+    httpRequest.send(null);
+    httpRequest.onreadystatechange = function() {
+        if (httpRequest.readyState == 4 && httpRequest.status == 200) {
+            let result = JSON.parse(httpRequest.responseText);
+
+            if (result.results.length > 0) {
+                let latitude = result.results[0].geometry.location.lat;
+                let longitude = result.results[0].geometry.location.lng;
+
+                placeMarker(earth.getObjectByName('surface'),{
+                    latitude: latitude,
+                    longitude: longitude,
+                    radius: 0.5,
+                    height: 0,
+                    size: 0.01,
+                    color: color,
+                });
+            }
+        }
     };
-
-    window.requestAnimationFrame(animation);
 }
 
-animation();
+// Galaxy
+let galaxyGeometry = new THREE.SphereGeometry(100, 32, 32);
+let galaxyMaterial = new THREE.MeshBasicMaterial({
+    side: THREE.BackSide
+});
+let galaxy = new THREE.Mesh(galaxyGeometry, galaxyMaterial);
+
+// Load Galaxy Textures
+textureLoader.crossOrigin = true;
+textureLoader.load(
+    'https://s3-us-west-2.amazonaws.com/s.cdpn.io/141228/starfield.png',
+    function(texture) {
+        galaxyMaterial.map = texture;
+        scene.add(galaxy);
+    }
+);
+
+// Scene, Camera, Renderer Configuration
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+camera.position.set(1,1,1);
+orbitControls.enabled = !cameraAutoRotation;
+
+scene.add(camera);
+scene.add(spotLight);
+scene.add(earth);
+
+// Light Configurations
+spotLight.position.set(2, 0, 1);
+
+// Mesh Configurations
+earth.receiveShadow = true;
+earth.castShadow = true;
+earth.getObjectByName('surface').geometry.center();
+
+// On window resize, adjust camera aspect ratio and renderer size
+window.addEventListener('resize', function() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// Main render function
+let render = function() {
+    earth.getObjectByName('surface').rotation.y += 1/32 * 0.01;
+    earth.getObjectByName('atmosphere').rotation.y += 1/16 * 0.01;
+    if (cameraAutoRotation) {
+        cameraRotation += cameraRotationSpeed;
+        camera.position.y = 0;
+        camera.position.x = 2 * Math.sin(cameraRotation);
+        camera.position.z = 2 * Math.cos(cameraRotation);
+        camera.lookAt(earth.position);
+    }
+    requestAnimationFrame(render);
+    renderer.render(scene, camera);
+};
+
+render();
+
+// dat.gui
+var gui = new dat.GUI();
+var guiCamera = gui.addFolder('Camera');
+var guiSurface = gui.addFolder('Surface');
+var guiMarkers = guiSurface.addFolder('Markers');
+var guiAtmosphere = gui.addFolder('Atmosphere');
+var guiAtmosphericGlow = guiAtmosphere.addFolder('Glow');
+
+// dat.gui controls object
+var cameraControls = new function() {
+    this.speed = cameraRotationSpeed;
+    this.orbitControls = !cameraAutoRotation;
+}
+
+var surfaceControls = new function() {
+    this.rotation = 0;
+    this.bumpScale = 0.05;
+    this.shininess = 10;
+}
+
+var markersControls = new function() {
+    this.address = '';
+    this.color = 0xff0000;
+    this.placeMarker= function() {
+        placeMarkerAtAddress(this.address, this.color);
+    }
+}
+
+var atmosphereControls = new function() {
+    this.opacity = 0.8;
+}
+
+var atmosphericGlowControls = new function() {
+    this.intensity = 0.7;
+    this.fade = 7;
+    this.color = 0x93cfef;
+}
+
+// dat.gui controls
+guiCamera.add(cameraControls, 'speed', 0, 0.1).step(0.001).onChange(function(value) {
+    cameraRotationSpeed = value;
+});
+guiCamera.add(cameraControls, 'orbitControls').onChange(function(value) {
+    cameraAutoRotation = !value;
+    orbitControls.enabled = value;
+});
+
+guiSurface.add(surfaceControls, 'rotation', 0, 6).onChange(function(value) {
+    earth.getObjectByName('surface').rotation.y = value;
+});
+guiSurface.add(surfaceControls, 'bumpScale', 0, 1).step(0.01).onChange(function(value) {
+    earth.getObjectByName('surface').material.bumpScale = value;
+});
+guiSurface.add(surfaceControls, 'shininess', 0, 30).onChange(function(value) {
+    earth.getObjectByName('surface').material.shininess = value;
+});
+
+guiMarkers.add(markersControls, 'address');
+guiMarkers.addColor(markersControls, 'color');
+guiMarkers.add(markersControls, 'placeMarker');
+
+guiAtmosphere.add(atmosphereControls, 'opacity', 0, 1).onChange(function(value) {
+    earth.getObjectByName('atmosphere').material.opacity = value;
+});
+
+guiAtmosphericGlow.add(atmosphericGlowControls, 'intensity', 0, 1).onChange(function(value) {
+    earth.getObjectByName('atmosphericGlow').material.uniforms['c'].value = value;
+});
+guiAtmosphericGlow.add(atmosphericGlowControls, 'fade', 0, 50).onChange(function(value) {
+    earth.getObjectByName('atmosphericGlow').material.uniforms['p'].value = value;
+});
+guiAtmosphericGlow.addColor(atmosphericGlowControls, 'color').onChange(function(value) {
+    earth.getObjectByName('atmosphericGlow').material.uniforms.glowColor.value.setHex(value);
+});
