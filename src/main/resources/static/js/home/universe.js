@@ -280,8 +280,8 @@ window.addEventListener('resize', function() {
 
 // Main render function
 let render = function() {
-    earth.getObjectByName('surface').rotation.y += 1/32 * 0.01;
-    earth.getObjectByName('atmosphere').rotation.y += 1/16 * 0.01;
+    // earth.getObjectByName('surface').rotation.y += 1/32 * 0.01;
+    // earth.getObjectByName('atmosphere').rotation.y += 1/16 * 0.01;
     if (cameraAutoRotation) {
         cameraRotation += cameraRotationSpeed;
         camera.position.y = 0;
