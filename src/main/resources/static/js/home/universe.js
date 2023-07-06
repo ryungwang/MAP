@@ -253,8 +253,8 @@ textureLoader.load(
 );
 
 // Scene, Camera, Renderer Configuration
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+renderer.setSize(document.body.offsetWidth, document.body.offsetHeight);
+document.getElementById("content").appendChild(renderer.domElement);
 
 camera.position.set(1,1,1);
 orbitControls.enabled = !cameraAutoRotation;
@@ -273,9 +273,9 @@ scene.add(camera);
 
 // On window resize, adjust camera aspect ratio and renderer size
 window.addEventListener('resize', function() {
-    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.aspect = (document.body.offsetWidth - 17) / (document.body.offsetHeight - 17);
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(document.body.offsetWidth - 17, document.body.offsetHeight - 17);
 });
 
 // Main render function

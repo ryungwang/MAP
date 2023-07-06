@@ -20,7 +20,7 @@ function loadData(cb){
 
 /** svg 태그로 그리기 */
 function setGpath(){
-    let width = d3.select("body").node().getBoundingClientRect().width
+    let width = d3.select("body").node().getBoundingClientRect().width - 17
     let height = 900
     const sensitivity = 75
 
@@ -33,11 +33,11 @@ function setGpath(){
     const initialScale = projection.scale()
     let path = d3.geoPath().projection(projection)
 
-    let svg = d3.select("body")
+    let svg = d3.select("#content")
         .append("svg")
         .attr("width", width)
-        .style("height", "100vh")
-        .style("position", "absolute")
+        .attr("height", d3.select("body").node().getBoundingClientRect().height- 17)
+        // .style("height", "100vh")
 
 
     let globe = svg.append("circle")
@@ -91,12 +91,15 @@ function setGpath(){
         //     enter(d)
         // })
         .on("dblclick",function(d) {
+
             projection.scale(3000)
             path = d3.geoPath().projection(projection)
+            const bounds = path.bounds(d3.select(this));
+            console.log(bounds);
             svg.selectAll("path").transition().duration(2000).attr("d", path)
             globe.transition().duration(2000).attr("r", projection.scale())
             d3.select("body").transition().duration(1500).style("opacity", 0)
-            setTimeout(() => location.href = "/map/" + d.properties.name.replaceAll(" ", "_").toLowerCase(), 1500);
+            // setTimeout(() => location.href = "/map/" + d.properties.name.replaceAll(" ", "_").toLowerCase(), 1500);
         })
         .append('title')
         .text(d => d.properties.name)

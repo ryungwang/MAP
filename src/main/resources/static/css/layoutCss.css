@@ -1,0 +1,11 @@
+#nav{
+    position: absolute;
+    color: red;
+}
+#foot{
+    position: relative;
+    transform: translateY(-100%);
+}
+#wrapper{
+    height: 100vh;
+}

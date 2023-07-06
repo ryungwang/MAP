@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<th:block th:fragment="headerFlag">
+<head>
+    <title>헤더입니다</title>
+    <script th:src="@{/js/kendo/jquery-3.4.1.min.js}"></script>
+    <script th:src="@{/js/d3.v4.min.js}"></script>
+    <script th:src="@{/js/three/three.min.js}"></script>
+    <script th:src="@{/js/topojson-client.js}"></script>
+    <script th:src="@{/js/versor.js}"></script>
+    <script th:src="@{/js/three/three.min.js}"></script>
+    <script th:src="@{/js/three/OrbitControls.min.js}"></script>
+    <script th:src="@{/js/three/dat.min.js}"></script>
+    <link th:href="@{/css/layoutCss.css}" rel="stylesheet">
+</head>
+</th:block>
+
+<th:block th:fragment="nav">
+    <nav id="nav">네비입니다</nav>
+</th:block>
+</html>

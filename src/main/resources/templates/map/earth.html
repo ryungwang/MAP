@@ -1,24 +1,22 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:sec="http://www.w3.org/1999/xhtml">
-<head>
-	<meta charset="UTF-8">
-	<title>Map Hi</title>
-	<script type="text/javascript" src="/js/kendo/jquery-3.4.1.min.js?"></script>
-	<script src="/js/d3.v4.min.js"></script>
-	<script src="/js/three/three.min.js"></script>
-	<script src="/js/topojson-client.js"></script>
-	<script src="/js/versor.js"></script>
-	<script src="/js/three/three.min.js"></script>
-	<script src="/js/three/OrbitControls.min.js"></script>
-	<script src="/js/three/dat.min.js"></script>
-	<link th:href="@{/css/earth.css}" rel="stylesheet">
-</head>
-<body id="earth_body">
-	<a sec:authorize="isAnonymous()" th:href="@{/map/south_korea}" style="position: absolute;color: red;">한국</a>
-</body>
-<script src="/js/home/earth.js"></script>
-<script src="/js/home/universe.js"></script>
-<script>
+<html lang="en"
+		xmlns:sec="http://www.w3.org/1999/xhtml"
+		xmlns:th="http://www.thymeleaf.org"
+		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+		layout:decorate="~{fragments/layout}">
 
-</script>
+<th:block layout:fragment="content">
+	<th:block layout:fragment="css">
+		<link th:href="@{/css/earth.css}" rel="stylesheet">
+	</th:block>
+
+	<a sec:authorize="isAnonymous()" th:href="@{/map/south_korea}" style="position: absolute;color: red;top:5%;z-index: 9999">한국</a>
+
+	<th:block layout:fragment="script">
+		<script src="/js/home/earth.js"></script>
+		<script src="/js/home/universe.js"></script>
+	</th:block>
+</th:block>
+
+
 </html>
