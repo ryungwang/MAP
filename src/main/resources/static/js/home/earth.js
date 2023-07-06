@@ -57,7 +57,6 @@ function setGpath(){
         ])
         path = d3.geoPath().projection(projection)
         svg.selectAll("path").attr("d", path)
-        console.log(projection.rotate())
     })).call(d3.zoom()
         .scaleExtent([0, 300])
         .on('zoom', () => {
@@ -79,36 +78,25 @@ function setGpath(){
         .attr("class", "countries" )
         .selectAll("path")
         .data(data.features)
-        .enter().append("path")
+        .enter()
+        .append("path")
         .attr("class", d => "country_" + d.properties.name.replace(" ","_"))
         .attr("class", "country")
         .attr("d", path)
         .attr("fill", "white")
         .style('stroke', 'black')
         .style('stroke-width', 0.3)
-        .style("opacity",0.8)
+        // .style("opacity",0.8)
         // .on("mouseover", function (d) {
         //     enter(d)
         // })
         .on("dblclick",function(d) {
-            console.log(d3.select(this));
-
-
-
-            // const rotate = projection.rotate()
-            // const k = sensitivity / projection.scale()
-            // projection.rotate([
-            //     rotate[0] + mouseXY[0] * k,
-            //     rotate[1] - mouseXY[1] * k
-            // ])
-            // path = d3.geoPath().projection(projection)
-            // svg.selectAll("path").attr("d", path)
-
-            // projection.scale(3000)
-            // path = d3.geoPath().projection(projection)
-            // svg.selectAll("path").attr("d", path)
-            // globe.attr("r", "3000") // line 13 and 14 will be explain in detail in next lesson
-            // location.href = "/map/" + d.properties.name.replaceAll(" ", "_").toLowerCase()
+            projection.scale(3000)
+            path = d3.geoPath().projection(projection)
+            svg.selectAll("path").transition().duration(2000).attr("d", path)
+            globe.transition().duration(2000).attr("r", projection.scale())
+            d3.select("body").transition().duration(1500).style("opacity", 0)
+            setTimeout(() => location.href = "/map/" + d.properties.name.replaceAll(" ", "_").toLowerCase(), 1500);
         })
         .append('title')
         .text(d => d.properties.name)
@@ -135,7 +123,6 @@ loadData(function(world, cList) {
     countries = topojson.feature(world, world.objects.countries)
     countryList = cList
 })
-
 
 /** 나라이름 출력 */
 // function enter(country) {
