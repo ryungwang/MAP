@@ -20,8 +20,8 @@ function loadData(cb){
 
 /** svg 태그로 그리기 */
 function setGpath(){
-    let width = d3.select("body").node().getBoundingClientRect().width - 17
-    let height = 900
+    let width = d3.select("body").node().getBoundingClientRect().width
+    let height = 960
     const sensitivity = 75
 
     let projection = d3.geoOrthographic()
@@ -36,7 +36,7 @@ function setGpath(){
     let svg = d3.select("#content")
         .append("svg")
         .attr("width", width)
-        .attr("height", d3.select("body").node().getBoundingClientRect().height- 17)
+        .attr("height", d3.select("body").node().getBoundingClientRect().height- 4)
         // .style("height", "100vh")
 
 
